@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API = 'http://localhost:8080/api';
+const API = 'https://expense-tracker-backend-1-iq4u.onrender.com';
 
 // Attach JWT token to every request automatically
 axios.interceptors.request.use(config => {
