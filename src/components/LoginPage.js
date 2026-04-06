@@ -14,6 +14,9 @@ const LoginPage = () => {
 
     const handleSubmit = async e => {
         e.preventDefault();
+
+        if (loading) return; // 🔥 prevent double click
+
         setLoading(true);
         setMessage({ text: '', type: '' });
 
@@ -25,36 +28,53 @@ const LoginPage = () => {
 
         try {
             if (isRegister) {
-                await AuthService.register(form.username, form.password);
+                const res = await AuthService.register(form.username, form.password);
+
+                console.log("REGISTER RESPONSE:", res);
+
                 setMessage({ text: '✅ Registered! You can now log in.', type: 'success' });
+
                 setIsRegister(false);
                 setForm({ username: form.username, password: '' });
+
             } else {
                 const res = await AuthService.login(form.username, form.password);
+
+                console.log("LOGIN RESPONSE:", res);
+
                 login(res.data.username, res.data.token);
             }
+
         } catch (err) {
-            const msg = err.response?.data?.message || 'Something went wrong. Try again.';
+            console.error("ERROR:", err);
+
+            const msg =
+                err.response?.data?.message ||
+                err.message ||
+                'Something went wrong. Try again.';
+
             setMessage({ text: `❌ ${msg}`, type: 'error' });
+
         } finally {
-            setLoading(false);
+            setLoading(false); // 🔥 ALWAYS STOP LOADING
         }
     };
 
     return (
         <div className="login-page">
             <div className="login-card">
-                {/* Left panel */}
+
+                {/* LEFT */}
                 <div className="login-brand">
                     <div className="login-brand-icon">🏗️</div>
                     <h1>Expense Tracker</h1>
-                    <p>Construction &amp; Project<br />Expense Management</p>
-                    
+                    <p>Construction & Project<br />Expense Management</p>
                 </div>
 
-                {/* Right panel */}
+                {/* RIGHT */}
                 <div className="login-form-panel">
                     <h2>{isRegister ? 'Create Account' : 'Welcome Back'}</h2>
+
                     <p className="login-sub">
                         {isRegister
                             ? 'Register to start tracking expenses'
@@ -62,7 +82,9 @@ const LoginPage = () => {
                     </p>
 
                     {message.text && (
-                        <div className={`alert alert-${message.type}`}>{message.text}</div>
+                        <div className={`alert alert-${message.type}`}>
+                            {message.text}
+                        </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="login-form">
@@ -73,11 +95,10 @@ const LoginPage = () => {
                                 name="username"
                                 value={form.username}
                                 onChange={handleChange}
-                                placeholder="Enter your username"
-                                autoComplete="username"
                                 required
                             />
                         </div>
+
                         <div className="form-group">
                             <label>Password</label>
                             <input
@@ -85,16 +106,14 @@ const LoginPage = () => {
                                 name="password"
                                 value={form.password}
                                 onChange={handleChange}
-                                placeholder="Enter your password"
-                                autoComplete="current-password"
                                 required
                             />
                         </div>
 
                         <button
                             type="submit"
-                            className="btn btn-primary btn-full"
                             disabled={loading}
+                            className="btn btn-primary btn-full"
                         >
                             {loading
                                 ? (isRegister ? 'Registering...' : 'Signing in...')
@@ -104,14 +123,28 @@ const LoginPage = () => {
 
                     <div className="login-switch">
                         {isRegister ? (
-                            <>Already have an account?{' '}
-                                <button className="link-btn" onClick={() => { setIsRegister(false); setMessage({ text: '', type: '' }); }}>
+                            <>
+                                Already have an account?{' '}
+                                <button
+                                    className="link-btn"
+                                    onClick={() => {
+                                        setIsRegister(false);
+                                        setMessage({ text: '', type: '' });
+                                    }}
+                                >
                                     Sign In
                                 </button>
                             </>
                         ) : (
-                            <>Don't have an account?{' '}
-                                <button className="link-btn" onClick={() => { setIsRegister(true); setMessage({ text: '', type: '' }); }}>
+                            <>
+                                Don't have an account?{' '}
+                                <button
+                                    className="link-btn"
+                                    onClick={() => {
+                                        setIsRegister(true);
+                                        setMessage({ text: '', type: '' });
+                                    }}
+                                >
                                     Register
                                 </button>
                             </>
